@@ -1,3 +1,6 @@
+//Version 1.0 under git crevelop and SkyFoxDigital
+
+
 var brainRight: GameObject;
 
 var brainLeft: GameObject;
