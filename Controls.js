@@ -49,10 +49,10 @@ function OnGUI () {
   	 
    {
    		
-   		brainRight.renderer.material.shader = Shader.Find("Diffuse");
+   		brainRight.renderer.sharedMaterial.shader = Shader.Find("Diffuse");
    }
    else{
-   		brainRight.renderer.material.shader = Shader.Find("Transparent/Diffuse");
+   		brainRight.renderer.sharedMaterial.shader = Shader.Find("Transparent/Diffuse");
    }
    
    brainRight.renderer.material.color.a = slider1;
@@ -62,10 +62,10 @@ function OnGUI () {
    if(slider2 == 1)
   	 
    {
-   		brainLeft.renderer.material.shader = Shader.Find("Diffuse");
+   		brainLeft.renderer.sharedMaterial.shader = Shader.Find("Diffuse");
    }
    else{
-   		brainLeft.renderer.material.shader = Shader.Find("Transparent/Diffuse");
+   		brainLeft.renderer.sharedMaterial.shader = Shader.Find("Transparent/Diffuse");
    }
    
    brainLeft.renderer.material.color.a = slider2;
@@ -75,13 +75,13 @@ function OnGUI () {
    if(slider3 == 1)
   	 
    {
-   		brainConnection.renderer.material.shader = Shader.Find("Diffuse");
+   		brainConnection.renderer.sharedMaterial.shader = Shader.Find("Diffuse");
    }
    else{
    		brainConnection.renderer.material.shader = Shader.Find("Transparent/Diffuse");
    }
    
-   brainConnection.renderer.material.color.a = slider3;
+   brainConnection.renderer.sharedMaterial.color.a = slider3;
 	}	
 
 	 

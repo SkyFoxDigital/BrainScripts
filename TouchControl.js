@@ -1,5 +1,5 @@
 var targetItem : GameObject;
-
+var GUICamera : Camera;
 
 //item movement
 var rotationRate : float = 0.3;
@@ -26,6 +26,7 @@ var hit: RaycastHit;
 
 
 
+
 function Start()
 {
 
@@ -44,12 +45,19 @@ function FixedUpdate()
 	{		//	If there are touches...
 			var theTouch : Touch = Input.GetTouch (0);		//	Cache Touch (0)
 			
-			var ray = Camera.main.ScreenPointToRay(theTouch.position);
+			var ray = GUICamera.camera.ScreenPointToRay(theTouch.position);
+			
 			
 			if(Physics.Raycast(ray,hit,40))
          	{
-         			if(hit.collider.gameObject.tag == "TouchCollider")
+         			if(hit.collider.gameObject.tag == "GUICollider")
          			{
+         				//Hitting GUI elements
+         				print("Hit GUI");
+         			}	
+         			else if(hit.collider.gameObject.tag == "TouchCollider")
+         			{
+         				print("Hit Models");
          				if(Input.touchCount == 2)
 						{
 							var theTouch2 : Touch = Input.GetTouch (1);
