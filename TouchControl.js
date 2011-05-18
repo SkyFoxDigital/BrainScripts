@@ -22,9 +22,12 @@ private var rotateVelocityY : float = 0;
 
 
 var hit: RaycastHit;
-
-
-
+//Collider sphere
+var touchCollider : GameObject;
+private var sphereCollider : SphereCollider;
+var sphereRadius : float;
+private var rMin : float = 12.0;
+private var rMax : float = 20.0;
 
 
 function Start()
@@ -32,7 +35,8 @@ function Start()
 
 	//targetItem = GameObject.Find("Brain").gameObject;
 	zoomDistance = Camera.main.orthographicSize;
-	
+	sphereCollider = touchCollider.GetComponent(SphereCollider) as SphereCollider;
+	sphereRadius = sphereCollider.radius;
 }
 
 
@@ -68,8 +72,12 @@ function FixedUpdate()
 				
 							//print(theDelta);
 							zoomDistance = Mathf.Clamp(zoomDistance-theDelta*Time.deltaTime,zoomMin,zoomMax);
+							
+							sphereRadius = Mathf.Clamp(sphereRadius+theDelta*Time.deltaTime,rMin,rMax);
 		
 							Camera.main.orthographicSize = zoomDistance; 
+							sphereCollider.radius = sphereRadius; 
+							print(sphereRadius);
 						}
 						
 						

@@ -53,6 +53,8 @@ function Start ()
 	tractsSlider.Value = 1;
 	RSlider.Value = 1;
 	LSlider.Value = 1;
+	nucleiSlider.Value = 0;
+	SliderChanged(nucleiSlider);
 	
 	faceSlider.AddValueChangedDelegate(SliderChanged);
 	RSlider.AddValueChangedDelegate(SliderChanged);
