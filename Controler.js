@@ -1,8 +1,14 @@
+var Head : Transform;
+
 //Models
 
 var Face : GameObject;
-var Tracts : GameObject; 
-var Nuclei : GameObject;
+
+private var Lobes : GameObject;
+private var Broadmann : GameObject;
+private var Gyri : GameObject;
+private var Tracts : GameObject;
+private var Nuclei : GameObject;
 var LBrain : GameObject[];
 var RBrain : GameObject[];
 
@@ -10,6 +16,16 @@ var leftChildren;
 var rightChildren;
 var tractsChildren;
 var nucleiChildren;
+
+private var lastObjectActive;
+private var justStarted;
+
+//Prefab SpawnPoints
+var broadmannSpawn : Transform;
+var lobesSpawn : Transform;
+var gyriSpawn : Transform;
+var tractsSpawn : Transform;
+var nucleiSpawn : Transform;
 
 // Scroll lists
 var trackList : UIScrollList;
@@ -29,28 +45,22 @@ var tractsSlider : UISlider;
 var nucleiSlider : UISlider;
 var switchBar : UIScrollList;
 
-//FPS variables
-var updateInterval = 0.5;
-private var lastInterval : double; // Last interval end time
-private var frames = 0; // Frames over current interval
-private var fps : float; // Current FPS
+//Testing Label
+var theLabel: SpriteText;
+private var lastObjectTouched : Transform;
 
 
 // Use this for initialization
 function Start () 
 {
 	
-	
-	tractsChildren = Tracts.GetComponentsInChildren(Transform);
-	nucleiChildren = Nuclei.GetComponentsInChildren(Transform);
-	
-	//Frames per second initialization
-	lastInterval = Time.realtimeSinceStartup;
-    frames = 0;
-	
+	justStarted = true;
+		
 	//register delegate for sliders
-	faceSlider.Value = 1;
-	tractsSlider.Value = 1;
+	faceSlider.Value = 0;
+	SliderChanged(faceSlider);
+	tractsSlider.Value = 0;
+	SliderChanged(tractsSlider);
 	RSlider.Value = 1;
 	LSlider.Value = 1;
 	nucleiSlider.Value = 0;
@@ -99,30 +109,71 @@ function Start ()
 	switchBar.AddValueChangedDelegate(SwitchChanged);
 	switchBar.SetSelectedItem(0);
 	SwitchChanged();
-	subViewButton.Text = switchBar.SelectedItem.Text;
+	
 	
 	if(subViewButton.Text == "Hemisphere")
 	{
 		subViewButton.controlIsEnabled = false;
 	}
-}
-function Update() {
-    ++frames;
-    var timeNow = Time.realtimeSinceStartup;
-    if( timeNow > lastInterval + updateInterval )
-    {
-        fps = frames / (timeNow - lastInterval);
-        frames = 0;
-        lastInterval = timeNow;
-    }
+	
+	
+	
+	
+	
 }
 
-function OnGUI () 
+function CreateInstances()
 {
-	// Display label with two fractional digits
-    GUILayout.Label("" + fps.ToString("f2"));
+	if(justStarted)
+	{
+		print("Instantiating models");
+		Broadmann = Instantiate(Resources.Load("Broadmann")) as GameObject;
+		Broadmann.transform.parent = Head;
+		Broadmann.transform.position = broadmannSpawn.transform.position;//Vector3(-1.109, -0.031, -1.684);
+		Broadmann.transform.rotation = broadmannSpawn.transform.rotation;
+		LBrain[1] = Broadmann.Find("BroadmannLeft") as GameObject;
+		RBrain[1] = Broadmann.Find("BroadmannRight") as GameObject; 
+		Broadmann.SetActiveRecursively(false);
+	
+		Lobes = Instantiate(Resources.Load("Lobes")) as GameObject;
+		Lobes.transform.parent = Head;
+		Lobes.transform.position = lobesSpawn.transform.position;
+		Lobes.transform.rotation = lobesSpawn.transform.rotation;
+		LBrain[2] = Lobes.Find("LobesLeft") as GameObject;
+		RBrain[2] = Lobes.Find("LobesRight") as GameObject; 
+		Lobes.SetActiveRecursively(false);
+		
+		Gyri = Instantiate(Resources.Load("Gyri")) as GameObject;
+		Gyri.transform.parent = Head;
+		Gyri.transform.position = gyriSpawn.transform.position;
+		Gyri.transform.rotation = gyriSpawn.transform.rotation;
+		LBrain[3] = Gyri.Find("GyriLeft") as GameObject;
+		RBrain[3] = Gyri.Find("GyriRight") as GameObject; 
+		Gyri.SetActiveRecursively(false);
+	
+		Tracts = Instantiate(Resources.Load("Tracts")) as GameObject;
+		Tracts.transform.parent = Head;
+		Tracts.transform.position = tractsSpawn.transform.position;
+		Tracts.transform.rotation = tractsSpawn.transform.rotation;
+		tractsChildren = Tracts.GetComponentsInChildren(Transform);
+	
+		Tracts.SetActiveRecursively(true);
+	
+		Nuclei = Instantiate(Resources.Load("Nuclei")) as GameObject;
+		Nuclei.transform.parent = Head;
+		Nuclei.transform.position = nucleiSpawn.transform.position;
+		Nuclei.transform.rotation = nucleiSpawn.transform.rotation;
+		nucleiChildren = Nuclei.GetComponentsInChildren(Transform);
+
+		Nuclei.SetActiveRecursively(true);
+		
+		justStarted = false;
+	}
+	else
+	{
+		print("instances already loaded");	
+	}
 }
-// Update is called once per frame
 function TrackSelected (obj : UIListButton)
 {
 	var bt : UIListButton = obj;
@@ -186,26 +237,27 @@ function PresetNucleiPressed ()
 function SwitchChanged ()
 {
 	subViewButton.Text = switchBar.SelectedItem.Text;
-	if(subViewButton.Text == "Hemisphere")
-	{
-		subViewButton.controlIsEnabled = false;
-		LBrain[0].SetActiveRecursively(true);
-		RBrain[0].SetActiveRecursively(true);
-		leftChildren = LBrain[0].GetComponentsInChildren(Transform);
-		rightChildren = RBrain[0].GetComponentsInChildren(Transform);
-		SliderChanged(RSlider);
-		SliderChanged(LSlider);
-		for(var i : int = 1; i < 4 ; i++)
+
+		switch(switchBar.SelectedItem.Text)
 		{
-			LBrain[i].SetActiveRecursively(false);
-			RBrain[i].SetActiveRecursively(false);	
+		case "Hemisphere" :
+	
+			subViewButton.controlIsEnabled = false;
+			LBrain[0].SetActiveRecursively(true);
+			RBrain[0].SetActiveRecursively(true);
+			leftChildren = LBrain[0].GetComponentsInChildren(Transform);
+			rightChildren = RBrain[0].GetComponentsInChildren(Transform);
+			SliderChanged(RSlider);
+			SliderChanged(LSlider);
 			
-		}
-	}	
-	else
-	{
-		switch(subViewButton.Text)
-		{
+			if(lastObjectActive)
+			{
+				LBrain[lastObjectActive].SetActiveRecursively(false);
+				RBrain[lastObjectActive].SetActiveRecursively(false);	
+			}	
+		
+			lastObjectActive = 0;
+			break;	
 		case "Broadmann" :
 			subViewButton.panel = "BroadmannListPanel";
 			LBrain[1].SetActiveRecursively(true);
@@ -214,16 +266,12 @@ function SwitchChanged ()
 			rightChildren = RBrain[1].GetComponentsInChildren(Transform);
 			SliderChanged(RSlider);
 			SliderChanged(LSlider);
-			for(var iB : int = 0; iB < 4; iB++)
-			{
-				if(iB != 1)
-				{
-					LBrain[iB].SetActiveRecursively(false);
-					RBrain[iB].SetActiveRecursively(false);
-					
-				}	
-				
-			}
+		
+			LBrain[lastObjectActive].SetActiveRecursively(false);
+			RBrain[lastObjectActive].SetActiveRecursively(false);	
+			
+		
+			lastObjectActive = 1;
 			break;
 		case "Lobes" :
 			subViewButton.panel = "LobesListPanel";
@@ -233,15 +281,12 @@ function SwitchChanged ()
 			rightChildren = RBrain[2].GetComponentsInChildren(Transform);
 			SliderChanged(RSlider);
 			SliderChanged(LSlider);
-			for(var iL : int = 0; iL < 4; iL++)
-			{
-				if(iL != 2)
-				{
-					LBrain[iL].SetActiveRecursively(false);
-					RBrain[iL].SetActiveRecursively(false);	
-					
-				}	
-			}
+			
+			LBrain[lastObjectActive].SetActiveRecursively(false);
+			RBrain[lastObjectActive].SetActiveRecursively(false);	
+			
+		
+			lastObjectActive = 2;
 			break;
 		case "Gyri" :
 			subViewButton.panel = "GyriListPanel";
@@ -251,20 +296,17 @@ function SwitchChanged ()
 			rightChildren = RBrain[3].GetComponentsInChildren(Transform);
 			SliderChanged(RSlider);
 			SliderChanged(LSlider);
-			for(var iG : int = 0; iG < 4; iG++)
-			{
-				if(iG != 3)
-				{
-					LBrain[iG].SetActiveRecursively(false);
-					RBrain[iG].SetActiveRecursively(false);	
-					
-				}
-			}
+			
+			LBrain[lastObjectActive].SetActiveRecursively(false);
+			RBrain[lastObjectActive].SetActiveRecursively(false);	
+			
+		
+			lastObjectActive = 3;
 			break;		
 		}
 		
-		subViewButton.controlIsEnabled = true;
-	}
+		
+	
 }
 
 
@@ -284,15 +326,8 @@ function SliderChanged(obj : UISlider)
 					else
 					{
 						Face.renderer.enabled = true;	
-						if(obj.Value == 1)
-  		 				{
-   							Face.renderer.material.shader = Shader.Find("Diffuse");
-   						}
-  						else
-  						{
-   							Face.renderer.material.shader = Shader.Find("Transparent/Diffuse");
-   						}
-						Face.renderer.material.color.a = obj.Value;
+						
+						Face.renderer.material.color.a = obj.Value*0.4;
 					}
 			
 			break;
@@ -368,7 +403,7 @@ function SliderChanged(obj : UISlider)
 						tractChild.renderer.enabled = true;	
 						if(obj.Value == 1)
   		 				{
-   							tractChild.renderer.material.shader = Shader.Find("Diffuse");
+   							tractChild.renderer.material.shader = Shader.Find("Specular");
    						}
   						else
   						{
@@ -413,8 +448,38 @@ function SliderChanged(obj : UISlider)
 }
 
 
-
-
+function TouchOnModel(obj : Transform)
+{	
+	if(lastObjectTouched != obj && obj.renderer)
+	{
+		if(lastObjectTouched)
+		{
+			lastObjectTouched.renderer.material.shader = Shader.Find("Transparent/Diffuse");
+		}
+		theLabel.Text = obj.transform.name;
+	
+		if(RSlider.Value > 0.1)
+		{
+			RSlider.Value = 0.1;
+			SliderChanged(RSlider);
+		}
+		if(LSlider.Value > 0.1)
+		{
+			LSlider.Value = 0.1;
+			SliderChanged(LSlider);
+		}
+	
+		
+		obj.renderer.material.shader = Shader.Find("Diffuse");
+		
+		
+		lastObjectTouched = obj;
+	}
+	
+		
+	
+	
+}
 
 
 

@@ -1,8 +1,8 @@
 var targetItem : GameObject;
 var GUICamera : Camera;
-
+var ambient : GameObject;
 //item movement
-var rotationRate : float = 0.3;
+var rotationRate : float = 0.5;
 private var wasRotating;
 
 var zoomMin : float;
@@ -22,21 +22,25 @@ private var rotateVelocityY : float = 0;
 
 
 var hit: RaycastHit;
-//Collider sphere
+//Collider and Layers
 var touchCollider : GameObject;
 private var sphereCollider : SphereCollider;
-var sphereRadius : float;
-private var rMin : float = 12.0;
-private var rMax : float = 20.0;
+var layerMaskGUI = 1 << 9;
+var layerMask;
 
+//Scripts references
+var controler : Controler;
 
 function Start()
 {
 
 	//targetItem = GameObject.Find("Brain").gameObject;
-	zoomDistance = Camera.main.orthographicSize;
-	sphereCollider = touchCollider.GetComponent(SphereCollider) as SphereCollider;
-	sphereRadius = sphereCollider.radius;
+	zoomDistance = 0;
+	//sphereCollider = touchCollider.GetComponent(SphereCollider) as SphereCollider;
+	//sphereRadius = sphereCollider.radius;
+	layerMask =~ layerMaskGUI;
+	
+	controler = GetComponent(Controler);
 }
 
 
@@ -49,20 +53,18 @@ function FixedUpdate()
 	{		//	If there are touches...
 			var theTouch : Touch = Input.GetTouch (0);		//	Cache Touch (0)
 			
-			var ray = GUICamera.camera.ScreenPointToRay(theTouch.position);
+			var ray = Camera.main.ScreenPointToRay(theTouch.position);
+			var GUIRay = GUICamera.ScreenPointToRay(theTouch.position);
 			
-			
-			if(Physics.Raycast(ray,hit,40))
+			if(Physics.Raycast(GUIRay,hit,50,layerMaskGUI))
          	{
-         			if(hit.collider.gameObject.tag == "GUICollider")
-         			{
-         				//Hitting GUI elements
-         				print("Hit GUI");
-         			}	
-         			else if(hit.collider.gameObject.tag == "TouchCollider")
-         			{
-         				print("Hit Models");
-         				if(Input.touchCount == 2)
+         			//Hit GUI elements
+         			
+         	}	
+         	else if(Physics.Raycast(ray,hit,50,layerMask))
+         	{			
+         			
+         			if(Input.touchCount == 2)
 						{
 							var theTouch2 : Touch = Input.GetTouch (1);
 							var currentDistance : Vector2 = (theTouch.position - theTouch2.position);
@@ -71,13 +73,14 @@ function FixedUpdate()
 							var theDelta = currentDistance.magnitude - previousDistance.magnitude;
 				
 							//print(theDelta);
-							zoomDistance = Mathf.Clamp(zoomDistance-theDelta*Time.deltaTime,zoomMin,zoomMax);
+							zoomDistance = Mathf.Clamp(zoomDistance-theDelta*Time.deltaTime*1.2,zoomMin,zoomMax);
 							
-							sphereRadius = Mathf.Clamp(sphereRadius+theDelta*Time.deltaTime,rMin,rMax);
-		
-							Camera.main.orthographicSize = zoomDistance; 
-							sphereCollider.radius = sphereRadius; 
-							print(sphereRadius);
+							
+							//Camera.main.orthographicSize = zoomDistance; 
+							targetItem.transform.position.z = zoomDistance;
+							ambient.transform.position.z = zoomDistance;
+
+							
 						}
 						
 						
@@ -109,7 +112,10 @@ function FixedUpdate()
            							}	
          						itemTimeTouchPhaseEnded = Time.time;
          						}
-         		
+         						else if(hit.collider.gameObject.tag != "TouchCollider"){
+         							controler.TouchOnModel(hit.transform);
+         							//Debug.Log(hit.transform.name);
+         						}
          						if(theTouch.tapCount == 2)
          						{
          							targetItem.transform.rotation = Quaternion.identity;
@@ -117,7 +123,7 @@ function FixedUpdate()
          			
          					}
 						}
-         			}		 	
+         			//}		 	
 				
 			}
 
@@ -163,5 +169,3 @@ function FixedUpdate()
         
       }	
 }
-
-
